@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work In Progress Component</title>
+    <style>
+        /* Generic Work In Progress Component - Reusable */
+        .wip-container {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #4facfe;
+            --accent-end: #00f2fe;
+            --danger-color: #f093fb;
+            --danger-end: #f5576c;
+            --text-dark: #495057;
+            --text-muted: #6c757d;
+            --text-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --shadow-light: rgba(0,0,0,0.1);
+            --shadow-medium: rgba(0,0,0,0.2);
+            --border-radius: 15px;
+            --border-radius-lg: 25px;
+            
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            position: relative;
+            min-height: 500px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 40px var(--shadow-light);
+        }
+
+        .wip-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 20px;
+            min-height: calc(100% - 40px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .wip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .wip-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 3rem 2rem;
+            position: relative;
+        }
+
+        .wip-icon-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .wip-main-icon {
+            font-size: 5rem;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-end) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: wip-pulse 2s infinite;
+            filter: drop-shadow(0 4px 8px var(--shadow-light));
+        }
+
+        /* Generic icon fallback if no icon font is available */
+        .wip-main-icon.no-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-end) 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .wip-floating-icons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .wip-floating-icon {
+            position: absolute;
+            color: rgba(102, 126, 234, 0.2);
+            font-size: 1.5rem;
+            animation: wip-float 3s ease-in-out infinite;
+        }
+
+        .wip-floating-icon:nth-child(1) { top: -60px; left: -40px; animation-delay: 0s; }
+        .wip-floating-icon:nth-child(2) { top: -40px; right: -60px; animation-delay: 0.5s; }
+        .wip-floating-icon:nth-child(3) { bottom: -60px; left: -30px; animation-delay: 1s; }
+        .wip-floating-icon:nth-child(4) { bottom: -40px; right: -50px; animation-delay: 1.5s; }
+
+        .wip-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            animation: wip-slideUp 1s ease-out;
+        }
+
+        .wip-description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            animation: wip-slideUp 1s ease-out 0.2s both;
+        }
+
+        .wip-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-end) 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(241, 147, 251, 0.3);
+            animation: wip-slideUp 1s ease-out 0.4s both, wip-glow 2s ease-in-out infinite alternate;
+        }
+
+        .wip-progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem auto;
+            animation: wip-slideUp 1s ease-out 0.6s both;
+        }
+
+        .wip-progress-bar {
+            height: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .wip-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-end));
+            border-radius: 10px;
+            width: 0%;
+            animation: wip-progressFill 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        .wip-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: wip-shimmer 2s infinite;
+        }
+
+        .wip-progress-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        .wip-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            animation: wip-slideUp 1s ease-out 0.8s both;
+        }
+
+        .wip-feature-card {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .wip-feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 25px var(--shadow-light);
+        }
+
+        .wip-feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .wip-feature-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .wip-feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes wip-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes wip-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes wip-slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes wip-glow {
+            0% { box-shadow: 0 4px 15px rgba(241, 147, 251, 0.3); }
+            100% { box-shadow: 0 6px 20px rgba(241, 147, 251, 0.5); }
+        }
+
+        @keyframes wip-progressFill {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 0%; }
+        }
+
+        @keyframes wip-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .wip-title { font-size: 2rem; }
+            .wip-main-icon { font-size: 4rem; }
+            .wip-content { padding: 2rem 1rem; }
+            .wip-features { grid-template-columns: 1fr; }
+        }
+
+        /* Color Theme Variations */
+        .wip-theme-blue {
+            --primary-color: #4285f4;
+            --secondary-color: #1a73e8;
+            --accent-color: #34a853;
+            --accent-end: #137333;
+        }
+
+        .wip-theme-purple {
+            --primary-color: #9c27b0;
+            --secondary-color: #673ab7;
+            --accent-color: #e91e63;
+            --accent-end: #c2185b;
+        }
+
+        .wip-theme-green {
+            --primary-color: #4caf50;
+            --secondary-color: #2e7d32;
+            --accent-color: #00bcd4;
+            --accent-end: #0097a7;
+        }
+
+        .wip-theme-orange {
+            --primary-color: #ff9800;
+            --secondary-color: #f57c00;
+            --accent-color: #ff5722;
+            --accent-end: #d84315;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 20px; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+    <!-- Default Theme -->
+    <div class="wip-container">
+        <div class="wip-card">
+            <div class="wip-content">
+                <div class="wip-icon-container">
+                    <div class="wip-main-icon no-icon">⚙️</div>
+                    <div class="wip-floating-icons">
+                        <span class="wip-floating-icon">📦</span>
+                        <span class="wip-floating-icon">📊</span>
+                        <span class="wip-floating-icon">📋</span>
+                        <span class="wip-floating-icon">⚡</span>
+                    </div>
+                </div>
+                
+                <h1 class="wip-title">Work In Progress</h1>
+                <p class="wip-description">
+                    We're working hard to bring you an amazing experience. 
+                    Our team is crafting something special just for you.
+                </p>
+                
+                <div class="wip-badge">
+                    <span>🔨</span>
+                    Under Development
+                </div>
+                
+                <div class="wip-progress-container">
+                    <div class="wip-progress-bar">
+                        <div class="wip-progress-fill"></div>
+                    </div>
+                    <small class="wip-progress-text">Development in progress...</small>
+                </div>
+                
+                <div class="wip-features">
+                    <div class="wip-feature-card">
+                        <div class="wip-feature-icon">🚀</div>
+                        <div class="wip-feature-title">Fast & Reliable</div>
+                        <div class="wip-feature-desc">Optimized for performance</div>
+                    </div>
+                    <div class="wip-feature-card">
+                        <div class="wip-feature-icon">📈</div>
+                        <div class="wip-feature-title">Analytics</div>
+                        <div class="wip-feature-desc">Detailed insights</div>
+                    </div>
+                    <div class="wip-feature-card">
+                        <div class="wip-feature-icon">🔔</div>
+                        <div class="wip-feature-title">Notifications</div>
+                        <div class="wip-feature-desc">Real-time updates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br><br>
+
+    <!-- Blue Theme Example -->
+    <div class="wip-container wip-theme-blue">
+        <div class="wip-card">
+            <div class="wip-content">
+                <div class="wip-icon-container">
+                    <div class="wip-main-icon no-icon">💼</div>
+                </div>
+                
+                <h1 class="wip-title">Business Dashboard</h1>
+                <p class="wip-description">
+                    Your comprehensive business management solution is coming soon.
+                </p>
+                
+                <div class="wip-badge">
+                    <span>⏳</span>
+                    Coming Soon
+                </div>
+                
+                <div class="wip-progress-container">
+                    <div class="wip-progress-bar">
+                        <div class="wip-progress-fill"></div>
+                    </div>
+                    <small class="wip-progress-text">80% Complete</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Optional: Dynamic content configuration
+        function createWIPComponent(config) {
+            const container = document.createElement('div');
+            container.className = `wip-container ${config.theme || ''}`;
+            
+            container.innerHTML = `
+                <div class="wip-card">
+                    <div class="wip-content">
+                        <div class="wip-icon-container">
+                            <div class="wip-main-icon no-icon">${config.icon || '⚙️'}</div>
+                            ${config.floatingIcons ? `
+                                <div class="wip-floating-icons">
+                                    ${config.floatingIcons.map(icon => `<span class="wip-floating-icon">${icon}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <h1 class="wip-title">${config.title || 'Work In Progress'}</h1>
+                        <p class="wip-description">${config.description || 'We\'re working hard to bring you an amazing experience.'}</p>
+                        
+                        <div class="wip-badge">
+                            <span>${config.badgeIcon || '🔨'}</span>
+                            ${config.badgeText || 'Under Development'}
+                        </div>
+                        
+                        ${config.showProgress !== false ? `
+                            <div class="wip-progress-container">
+                                <div class="wip-progress-bar">
+                                    <div class="wip-progress-fill"></div>
+                                </div>
+                                <small class="wip-progress-text">${config.progressText || 'Development in progress...'}</small>
+                            </div>
+                        ` : ''}
+                        
+                        ${config.features ? `
+                            <div class="wip-features">
+                                ${config.features.map(feature => `
+                                    <div class="wip-feature-card">
+                                        <div class="wip-feature-icon">${feature.icon}</div>
+                                        <div class="wip-feature-title">${feature.title}</div>
+                                        <div class="wip-feature-desc">${feature.description}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return container;
+        }
+
+        // Example usage:
+        /*
+        const wipComponent = createWIPComponent({
+            title: 'Inventory System',
+            description: 'Managing your stock has never been easier.',
+            icon: '📦',
+            theme: 'wip-theme-green',
+            badgeIcon: '🚧',
+            badgeText: 'In Development',
+            progressText: '65% Complete',
+            floatingIcons: ['📦', '📊', '📋', '⚡'],
+            features: [
+                { icon: '📦', title: 'Stock Management', description: 'Real-time tracking' },
+                { icon: '📊', title: 'Analytics', description: 'Detailed reports' },
+                { icon: '🔔', title: 'Alerts', description: 'Low stock notifications' }
+            ]
+        });
+        
+        document.body.appendChild(wipComponent);
+        */
+    </script>
+</body>
+</html>
