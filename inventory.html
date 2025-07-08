@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work In Progress - Inventory</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --card-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            --glow-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .content-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .breadcrumb-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .breadcrumb-header h4 {
+            color: white;
+            margin: 0;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-shadow);
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+            padding: 3rem;
+        }
+
+        .progress-content {
+            text-align: center;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .icon-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .main-icon {
+            font-size: 5rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s infinite, rotate 20s linear infinite;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .floating-icons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .floating-icon {
+            position: absolute;
+            color: rgba(102, 126, 234, 0.2);
+            font-size: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(1) { top: -60px; left: -40px; animation-delay: 0s; }
+        .floating-icon:nth-child(2) { top: -40px; right: -60px; animation-delay: 0.5s; }
+        .floating-icon:nth-child(3) { bottom: -60px; left: -30px; animation-delay: 1s; }
+        .floating-icon:nth-child(4) { bottom: -40px; right: -50px; animation-delay: 1.5s; }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            animation: slideInUp 1s ease-out;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-gradient);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(241, 147, 251, 0.3);
+            animation: slideInUp 1s ease-out 0.4s both, glow 2s ease-in-out infinite alternate;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem auto;
+            animation: slideInUp 1s ease-out 0.6s both;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 10px;
+            width: 0%;
+            animation: progressFill 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            animation: slideInUp 1s ease-out 0.8s both;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 4px 15px rgba(241, 147, 251, 0.3); }
+            100% { box-shadow: 0 6px 20px rgba(241, 147, 251, 0.5); }
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 0%; }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title { font-size: 2rem; }
+            .main-icon { font-size: 4rem; }
+            .progress-container { padding: 2rem 1rem; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 p-4">
+            <div class="breadcrumb-header">
+                <h4><span class="text-light fw-light">Business /</span> Inventory</h4>
+            </div>
+            
+            <div class="main-card">
+                <div class="progress-container">
+                    <div class="progress-content">
+                        <div class="icon-container">
+                            <i class="bi bi-gear-fill main-icon"></i>
+                            <div class="floating-icons">
+                                <i class="bi bi-box-seam floating-icon"></i>
+                                <i class="bi bi-graph-up floating-icon"></i>
+                                <i class="bi bi-clipboard-data floating-icon"></i>
+                                <i class="bi bi-speedometer2 floating-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <h1 class="title">Inventory System</h1>
+                        <p class="description">
+                            We're crafting an amazing inventory management experience just for you. 
+                            Our team is working around the clock to bring you powerful features that will 
+                            streamline your business operations.
+                        </p>
+                        
+                        <div class="status-badge">
+                            <i class="bi bi-hammer"></i>
+                            Under Development
+                        </div>
+                        
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <small class="text-muted mt-2 d-block">Development in progress...</small>
+                        </div>
+                        
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <i class="bi bi-boxes feature-icon"></i>
+                                <div class="feature-title">Stock Management</div>
+                                <div class="feature-desc">Real-time inventory tracking</div>
+                            </div>
+                            <div class="feature-card">
+                                <i class="bi bi-bar-chart-line feature-icon"></i>
+                                <div class="feature-title">Analytics</div>
+                                <div class="feature-desc">Detailed reporting & insights</div>
+                            </div>
+                            <div class="feature-card">
+                                <i class="bi bi-bell feature-icon"></i>
+                                <div class="feature-title">Alerts</div>
+                                <div class="feature-desc">Low stock notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
